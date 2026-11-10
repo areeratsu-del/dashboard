@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>แบบประเมินความพึงพอใจการอบรม</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Prompt & Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .scale-btn { transition: all 0.15s ease-out; }
+    .scale-btn:active { transform: scale(0.92); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12 antialiased">
+
+  <!-- Header Banner -->
+  <header class="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 text-white shadow-md">
+    <div class="max-w-xl mx-auto px-5 py-6">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-medium tracking-wide mb-3 backdrop-blur-sm">
+        <span>📝 แบบประเมินออนไลน์</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+        <span>ไม่ต้องล็อกอิน</span>
+      </div>
+      <h1 class="text-xl sm:text-2xl font-bold leading-tight">แบบประเมินความพึงพอใจการอบรม</h1>
+      <p class="text-indigo-100 text-sm mt-1">โปรดสละเวลา 1 นาทีเพื่อให้คะแนน ความคิดเห็นของท่านมีคุณค่ายิ่ง</p>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto px-4 mt-4">
+    
+    <!-- Status Card (Already Submitted) -->
+    <div id="alreadySubmittedCard" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 text-center my-6">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
+        🎉
+      </div>
+      <h2 class="text-xl font-bold text-slate-800">ท่านได้ส่งแบบประเมินเรียบร้อยแล้ว</h2>
+      <p class="text-slate-500 text-sm mt-2">
+        ขอบพระคุณสำหรับข้อคิดเห็นอันมีค่า ระบบบันทึกผลไปยังหน้าจอสรุปผลทันทีแล้ว
+      </p>
+      <div class="mt-6 pt-5 border-t border-slate-100">
+        <button id="resubmitBtn" class="text-xs text-indigo-600 font-medium hover:underline py-2 px-3 rounded-lg hover:bg-indigo-50 transition">
+          🔄 ต้องการตอบใหม่อีกครั้ง (ทดสอบระบบ)
+        </button>
+      </div>
+    </div>
+
+    <!-- Survey Form -->
+    <form id="surveyForm" class="space-y-4">
+      
+      <!-- Progress Bar -->
+      <div class="bg-white rounded-xl p-3 shadow-xs border border-slate-200/80 sticky top-2 z-10">
+        <div class="flex justify-between items-center text-xs font-semibold text-slate-600 mb-1.5">
+          <span>ความคืบหน้า</span>
+          <span id="progressText" class="text-indigo-600">0 / 5 ข้อ</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Instruction note -->
+      <div class="bg-blue-50/70 border border-blue-200/60 rounded-xl p-3 text-xs text-blue-900 flex items-start gap-2">
+        <span class="text-base">💡</span>
+        <span>เกณฑ์คะแนน: <b>1</b> = น้อยที่สุด, <b>2</b> = น้อย, <b>3</b> = ปานกลาง, <b>4</b> = มาก, <b>5</b> = มากที่สุด</span>
+      </div>
+
+      <!-- Question 1 -->
+      <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-3" id="card-q1">
+        <div class="flex items-start gap-2">
+          <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+          <p class="font-medium text-slate-800 text-sm sm:text-base">เนื้อหาหลักสูตรมีความชัดเจน ทันสมัย และตรงตามวัตถุประสงค์</p>
+        </div>
+        <div class="grid grid-cols-5 gap-2 pt-1" data-qid="q1">
+          <button type="button" data-score="1" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300">
+            <span class="text-2xl">😞</span>
+            <span class="text-xs font-bold mt-1 text-slate-700">1</span>
+            <span class="text-[10px] text-slate-400">น้อยสุด</span>
+          </button>
+          <button type="button" data-score="2" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300">
+            <span class="text-2xl">🙁</span>
+            <span class="text-xs font-bold mt-1 text-slate-700">2</span>
+            <span class="text-[10px] text-slate-400">น้อย</span>
+          </button>
+          <button type="button" data-score="3" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300">
+            <span class="text-2xl">😐</span>
+            <span class="text-xs font-bold mt-1 text-slate-700">3</span>
+            <span class="text-[10px] text-slate-400">ปานกลาง</span>
+          </button>
+          <button type="button" data-score="4" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300">
+            <span class="text-2xl">🙂</span>
+            <span class="text-xs font-bold mt-1 text-slate-700">4</span>
+            <span class="text-[10px] text-slate-400">มาก</span>
+          </button>
+          <button type="button" data-score="5" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300">
+            <span class="text-2xl">🤩</span>
+            <span class="text-xs font-bold mt-1 text-slate-700">5</span>
+            <span class="text-[10px] text-slate-400">มากสุด</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-3" id="card-q2">
+        <div class="flex items-start gap-2">
+          <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+          <p class="font-medium text-slate-800 text-sm sm:text-base">วิทยากรมีความรู้ความเชี่ยวชาญ เทคนิคการถ่ายทอดน่าสนใจและเข้าใจง่าย</p>
+        </div>
+        <div class="grid grid-cols-5 gap-2 pt-1" data-qid="q2">
+          <button type="button" data-score="1" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😞</span><span class="text-xs font-bold mt-1 text-slate-700">1</span><span class="text-[10px] text-slate-400">น้อยสุด</span></button>
+          <button type="button" data-score="2" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙁</span><span class="text-xs font-bold mt-1 text-slate-700">2</span><span class="text-[10px] text-slate-400">น้อย</span></button>
+          <button type="button" data-score="3" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😐</span><span class="text-xs font-bold mt-1 text-slate-700">3</span><span class="text-[10px] text-slate-400">ปานกลาง</span></button>
+          <button type="button" data-score="4" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙂</span><span class="text-xs font-bold mt-1 text-slate-700">4</span><span class="text-[10px] text-slate-400">มาก</span></button>
+          <button type="button" data-score="5" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🤩</span><span class="text-xs font-bold mt-1 text-slate-700">5</span><span class="text-[10px] text-slate-400">มากสุด</span></button>
+        </div>
+      </div>
+
+      <!-- Question 3 -->
+      <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-3" id="card-q3">
+        <div class="flex items-start gap-2">
+          <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+          <p class="font-medium text-slate-800 text-sm sm:text-base">เอกสาร สื่อการสอน และตัวอย่าง Workshop มีความเหมาะสมและมีประโยชน์</p>
+        </div>
+        <div class="grid grid-cols-5 gap-2 pt-1" data-qid="q3">
+          <button type="button" data-score="1" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😞</span><span class="text-xs font-bold mt-1 text-slate-700">1</span><span class="text-[10px] text-slate-400">น้อยสุด</span></button>
+          <button type="button" data-score="2" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙁</span><span class="text-xs font-bold mt-1 text-slate-700">2</span><span class="text-[10px] text-slate-400">น้อย</span></button>
+          <button type="button" data-score="3" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😐</span><span class="text-xs font-bold mt-1 text-slate-700">3</span><span class="text-[10px] text-slate-400">ปานกลาง</span></button>
+          <button type="button" data-score="4" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙂</span><span class="text-xs font-bold mt-1 text-slate-700">4</span><span class="text-[10px] text-slate-400">มาก</span></button>
+          <button type="button" data-score="5" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🤩</span><span class="text-xs font-bold mt-1 text-slate-700">5</span><span class="text-[10px] text-slate-400">มากสุด</span></button>
+        </div>
+      </div>
+
+      <!-- Question 4 -->
+      <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-3" id="card-q4">
+        <div class="flex items-start gap-2">
+          <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
+          <p class="font-medium text-slate-800 text-sm sm:text-base">ความพร้อมของสถานที่ อุปกรณ์ ระบบเครือข่าย และการประสานงาน</p>
+        </div>
+        <div class="grid grid-cols-5 gap-2 pt-1" data-qid="q4">
+          <button type="button" data-score="1" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😞</span><span class="text-xs font-bold mt-1 text-slate-700">1</span><span class="text-[10px] text-slate-400">น้อยสุด</span></button>
+          <button type="button" data-score="2" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙁</span><span class="text-xs font-bold mt-1 text-slate-700">2</span><span class="text-[10px] text-slate-400">น้อย</span></button>
+          <button type="button" data-score="3" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😐</span><span class="text-xs font-bold mt-1 text-slate-700">3</span><span class="text-[10px] text-slate-400">ปานกลาง</span></button>
+          <button type="button" data-score="4" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙂</span><span class="text-xs font-bold mt-1 text-slate-700">4</span><span class="text-[10px] text-slate-400">มาก</span></button>
+          <button type="button" data-score="5" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🤩</span><span class="text-xs font-bold mt-1 text-slate-700">5</span><span class="text-[10px] text-slate-400">มากสุด</span></button>
+        </div>
+      </div>
+
+      <!-- Question 5 -->
+      <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-3" id="card-q5">
+        <div class="flex items-start gap-2">
+          <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">5</span>
+          <p class="font-medium text-slate-800 text-sm sm:text-base">สามารถนำความรู้และทักษะที่ได้รับไปประยุกต์ใช้ในการทำงานได้จริง</p>
+        </div>
+        <div class="grid grid-cols-5 gap-2 pt-1" data-qid="q5">
+          <button type="button" data-score="1" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😞</span><span class="text-xs font-bold mt-1 text-slate-700">1</span><span class="text-[10px] text-slate-400">น้อยสุด</span></button>
+          <button type="button" data-score="2" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙁</span><span class="text-xs font-bold mt-1 text-slate-700">2</span><span class="text-[10px] text-slate-400">น้อย</span></button>
+          <button type="button" data-score="3" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">😐</span><span class="text-xs font-bold mt-1 text-slate-700">3</span><span class="text-[10px] text-slate-400">ปานกลาง</span></button>
+          <button type="button" data-score="4" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🙂</span><span class="text-xs font-bold mt-1 text-slate-700">4</span><span class="text-[10px] text-slate-400">มาก</span></button>
+          <button type="button" data-score="5" class="scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300"><span class="text-2xl">🤩</span><span class="text-xs font-bold mt-1 text-slate-700">5</span><span class="text-[10px] text-slate-400">มากสุด</span></button>
+        </div>
+      </div>
+
+      <!-- Comment (Optional) -->
+      <div class="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 space-y-2">
+        <label for="commentInput" class="block font-medium text-slate-800 text-sm">
+          💬 ข้อเสนอแนะเพิ่มเติม <span class="text-xs text-slate-400 font-normal">(ไม่บังคับ)</span>
+        </label>
+        <textarea id="commentInput" rows="3" placeholder="ระบุสิ่งที่ประทับใจ หรือข้อเสนอแนะในการพัฒนาครั้งต่อไป..." class="w-full text-sm rounded-xl border border-slate-200 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition resize-none"></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-2">
+        <button id="submitBtn" type="submit" disabled class="w-full py-4 rounded-xl font-bold text-white bg-slate-300 cursor-not-allowed shadow-md flex items-center justify-center gap-2 text-base transition-all duration-200">
+          <span>ส่งแบบประเมิน</span>
+          <span id="btnIcon">🚀</span>
+        </button>
+        <p id="submitWarning" class="text-center text-xs text-amber-600 mt-2 font-medium">โปรดตอบให้ครบทั้ง 5 ข้อก่อนกดส่ง</p>
+      </div>
+
+    </form>
+  </main>
+
+  <script>
+    // 1. Firebase Config (ใส่ Config จาก Firebase Console ของท่านที่นี่)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    let db = null;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.database();
+    } catch(err) {
+      console.warn('Firebase config error or not configured yet:', err);
+    }
+
+    // State
+    const scores = { q1: 0, q2: 0, q3: 0, q4: 0, q5: 0 };
+    const STORAGE_KEY = 'training_survey_submitted';
+
+    const form = document.getElementById('surveyForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitWarning = document.getElementById('submitWarning');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const alreadyCard = document.getElementById('alreadySubmittedCard');
+    const resubmitBtn = document.getElementById('resubmitBtn');
+
+    // Check duplicate
+    if (localStorage.getItem(STORAGE_KEY)) {
+      form.classList.add('hidden');
+      alreadyCard.classList.remove('hidden');
+    }
+
+    resubmitBtn.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      alreadyCard.classList.add('hidden');
+      form.classList.remove('hidden');
+    });
+
+    // Score selection handling
+    document.querySelectorAll('[data-qid]').forEach(group => {
+      const qid = group.getAttribute('data-qid');
+      const buttons = group.querySelectorAll('button');
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const score = parseInt(btn.getAttribute('data-score'));
+          scores[qid] = score;
+
+          buttons.forEach(b => {
+            b.className = 'scale-btn flex flex-col items-center justify-center py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700';
+          });
+          btn.className = 'scale-btn flex flex-col items-center justify-center py-3 rounded-xl border-2 border-indigo-600 bg-indigo-50/80 text-indigo-900 shadow-sm font-bold ring-2 ring-indigo-500/20';
+
+          updateProgress();
+        });
+      });
+    });
+
+    function updateProgress() {
+      const answeredCount = Object.values(scores).filter(s => s > 0).length;
+      const pct = (answeredCount / 5) * 100;
+      progressBar.style.width = pct + '%';
+      progressText.textContent = answeredCount + ' / 5 ข้อ';
+
+      if (answeredCount === 5) {
+        submitBtn.disabled = false;
+        submitBtn.className = 'w-full py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 text-base transition-all duration-200 cursor-pointer';
+        submitWarning.classList.add('hidden');
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.className = 'w-full py-4 rounded-xl font-bold text-white bg-slate-300 cursor-not-allowed shadow-md flex items-center justify-center gap-2 text-base transition-all duration-200';
+        submitWarning.classList.remove('hidden');
+        submitWarning.textContent = 'ยังเหลืออีก ' + (5 - answeredCount) + ' ข้อที่ยังไม่ได้ตอบ';
+      }
+    }
+
+    // Submit handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const answeredCount = Object.values(scores).filter(s => s > 0).length;
+      if (answeredCount < 5) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>กำลังส่งข้อมูล...</span> <span class="animate-spin">⏳</span>';
+
+      const comment = document.getElementById('commentInput').value.trim();
+      const submission = {
+        scores: scores,
+        comment: comment,
+        timestamp: firebase ? firebase.database.ServerValue.TIMESTAMP : Date.now()
+      };
+
+      try {
+        if (db) {
+          await db.ref('submissions').push(submission);
+        } else {
+          console.log('Firebase DB not initialized, logged locally:', submission);
+        }
+
+        localStorage.setItem(STORAGE_KEY, 'true');
+
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        setTimeout(() => {
+          form.classList.add('hidden');
+          alreadyCard.classList.remove('hidden');
+        }, 600);
+
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>ส่งแบบประเมิน</span> <span>🚀</span>';
+      }
+    });
+  </script>
+</body>
+</html>

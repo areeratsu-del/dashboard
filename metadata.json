@@ -1,0 +1,6 @@
+{
+  "name": "ระบบประเมินความพึงพอใจการอบรม & Live Dashboard",
+  "description": "เว็บแอปตอบแบบสอบถามความพึงพอใจ 5 ระดับสำหรับผู้เข้าอบรม พร้อมแดชบอร์ดสรุปผลแบบเรียลไทม์ QR Code และส่งออก CSV",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
